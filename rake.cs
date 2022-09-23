@@ -43,7 +43,6 @@ namespace rakentlk
             }
             else{
                 this.punctuation = punctuation.ToHashSet();
-                Console.WriteLine("Here");
             }
             
             this.language = language;
@@ -59,13 +58,6 @@ namespace rakentlk
         }
         public void extract_keywords_from_sentences(List<string> sentences){
             List<List<string>> phrase_list = this._generate_phrases(sentences);
-            foreach (var item in phrase_list)
-            {
-                foreach (var i in item)
-            {
-                Console.WriteLine(i);
-            }
-            }
             this._build_frequency_dist(phrase_list);
             this._build_word_co_occurance_graph(phrase_list);
             this._build_ranklist(phrase_list);
@@ -84,7 +76,7 @@ namespace rakentlk
             return this.sentence_tokenizer = text.Split(". ").ToList();
         }
         public List<string> _tokenize_sentence_to_words(string sentence){
-            return this.word_tokenizer = sentence.Split(". ", ' ').ToList();
+            return this.word_tokenizer = sentence.Split(' ', '.', ',').ToList();
         }
         public void _build_frequency_dist(List<List<string>> phrase_list){
             foreach(var phrase in phrase_list){
@@ -101,26 +93,28 @@ namespace rakentlk
         }
         public void _build_word_co_occurance_graph(List<List<string>> phrase_list){
             Dictionary<string, Dictionary<string, int>> co_occurance_graph = new();
-            foreach (var phrase in phrase_list)
-            {
+            System.Console.WriteLine("building occurance graph");
+            foreach (var phrase in phrase_list){
                 foreach(var word in phrase){
-                    foreach(var coword in phrase){
-                    if(word != coword){
-
-                    if(co_occurance_graph[word][coword] != null){
-                    co_occurance_graph[word][coword]  +=1;
-                    }else{  
-                        Dictionary<string, int> _tmp = new();
-                        _tmp.Add(word, 1);
-                        co_occurance_graph.Add(word, _tmp);
-                        _tmp.Clear();
-                    }
-                    }
+                    foreach(string coword in phrase){
+                            //System.Console.WriteLine(coword + " " + word);
+                        if(word != coword){
+                            if(co_occurance_graph[word][coword] != null){
+                                co_occurance_graph[word][coword]  +=1;
+                            }else{  
+                                Dictionary<string, int> _tmp = new();
+                                _tmp.Add(word, 1);
+                                co_occurance_graph.Add(word, _tmp);
+                                _tmp.Clear();
+                            }
+                        }
                     }
                 }
             }
             foreach (var set in co_occurance_graph)
             {
+                System.Console.WriteLine("heres");
+                System.Console.WriteLine( set.Key);
                 if(this.degree[set.Key] != null){
                     this.degree[set.Key] = set.Value.Values.Sum();
                 }else{
@@ -135,6 +129,9 @@ namespace rakentlk
                 rank = 0.0f;
                 foreach (var word in phrase)
                 {
+                    System.Console.WriteLine(word);
+                    System.Console.WriteLine(this.degree.Count());
+
                     if(this.ranking_metric == Metric.DEGREE_TO_FREQUENCY_RATIO){
                         rank += 1.0f * this.degree[word] / this.frequency_dist[word];
                     }else if(this.ranking_metric == Metric.WORD_DEGREE){
@@ -159,10 +156,9 @@ namespace rakentlk
                 List<string> word_list = new();
                 foreach (var word in this._tokenize_sentence_to_words(sentence)){
                     word_list.Add(word.ToLower());
-                    System.Console.WriteLine(word);
                 }
                 foreach (var phrase in this._get_phrase_list_from_words(word_list)){
-                    phrase_list.Append(phrase);
+                    phrase_list.Add(phrase);
                 }
             }
             if(!this.include_repeat_phrase){
@@ -172,7 +168,7 @@ namespace rakentlk
                 {
                     if(!unique_phrase_tracker.Contains(phrase)){
                         unique_phrase_tracker.Add(phrase);
-                        non_repeated_phrase_list.Append(phrase);
+                        non_repeated_phrase_list.Add(phrase);
                     }
                 }
                 return non_repeated_phrase_list;
@@ -195,6 +191,7 @@ namespace rakentlk
                         _tmp = new(true, new());
                         _tmp.Item2.Add(word);
                         groups.Add(_tmp);
+                        System.Console.WriteLine(word);
                     }        
             }
             List<List<string>> phrases = new();
@@ -203,6 +200,13 @@ namespace rakentlk
                 if(group.Item1 
                     && (group.Item2.Count() >= this.min_length && group.Item2.Count() <= this.max_length)){
                     phrases.Add(group.Item2);
+                    // foreach (var phrase in group.Item2){
+                    //     foreach (var item in phrase)
+                    //     {
+                    //         System.Console.WriteLine(phrase);
+                    //     }
+                    // }
+
                 }
             }
             return phrases;
