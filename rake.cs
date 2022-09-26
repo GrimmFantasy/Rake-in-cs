@@ -129,7 +129,7 @@ namespace rakentlk
                 rank = 0.0f;
                 foreach (var word in phrase)
                 {
-                    System.Console.WriteLine(word);
+                    //System.Console.WriteLine(word);
                     System.Console.WriteLine(this.degree.Count());
 
                     if(this.ranking_metric == Metric.DEGREE_TO_FREQUENCY_RATIO){
