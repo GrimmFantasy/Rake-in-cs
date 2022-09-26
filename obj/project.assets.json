@@ -8,24 +8,26 @@
     "net6.0": []
   },
   "packageFolders": {
-    "/home/caspera/.nuget/packages/": {}
+    "C:\\Users\\capse\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/home/caspera/Documents/Rake_Ntlk_In_C#/Rake_NTLK_IN_CS/rakentlk.csproj",
+      "projectUniqueName": "C:\\Users\\capse\\Documents\\GitHub\\Rake_NTLK_IN_CS\\rakentlk.csproj",
       "projectName": "rakentlk",
-      "projectPath": "/home/caspera/Documents/Rake_Ntlk_In_C#/Rake_NTLK_IN_CS/rakentlk.csproj",
-      "packagesPath": "/home/caspera/.nuget/packages/",
-      "outputPath": "/home/caspera/Documents/Rake_Ntlk_In_C#/Rake_NTLK_IN_CS/obj/",
+      "projectPath": "C:\\Users\\capse\\Documents\\GitHub\\Rake_NTLK_IN_CS\\rakentlk.csproj",
+      "packagesPath": "C:\\Users\\capse\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\capse\\Documents\\GitHub\\Rake_NTLK_IN_CS\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "/home/caspera/.nuget/NuGet/NuGet.Config"
+        "C:\\Users\\capse\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
         "net6.0"
       ],
       "sources": {
+        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
@@ -58,7 +60,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/6.0.108/RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.301\\RuntimeIdentifierGraph.json"
       }
     }
   }

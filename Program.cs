@@ -1,17 +1,18 @@
 ﻿using System;
 using System.IO;
 using System.Text;
+using System.Collections.Generic;
 namespace rakentlk{
 
     class main{
 
-        static void Main(string[] args) {
+        static void Main() {
               
             Rake r = new(punctuation: new List<string> { ",", ". "});
             
             List<string> lines = new List<string>();
             // Open the stream and read it back.
-            using (FileStream fs = File.Open("test.txt", FileMode.Open))
+            using (FileStream fs = File.Open("C:\\Users\\capse\\Documents\\GitHub\\Rake_NTLK_IN_CS\\test.txt", FileMode.Open))
             {
                 byte[] b = new byte[1024];
                 UTF8Encoding temp = new UTF8Encoding(true);
@@ -22,7 +23,7 @@ namespace rakentlk{
                 }
                 
             }
-            r.extract_keywords_from_text(String.Join(' ', lines));
+            r.extract_keywords_from_text(String.Join(" ", lines));
             List<string> phrases = r.get_ranked_phrases_without_scores();
             Console.WriteLine(phrases.Count());
             foreach (var item in phrases)

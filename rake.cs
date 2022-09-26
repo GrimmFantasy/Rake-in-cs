@@ -113,8 +113,8 @@ namespace rakentlk
             }
             foreach (var set in co_occurance_graph)
             {
-                System.Console.WriteLine("heres");
-                System.Console.WriteLine( set.Key);
+                //System.Console.WriteLine("heres");
+                //System.Console.WriteLine( set.Key);
                 if(this.degree[set.Key] != null){
                     this.degree[set.Key] = set.Value.Values.Sum();
                 }else{
@@ -182,8 +182,7 @@ namespace rakentlk
             Tuple<bool, List<string>> _tmp;
 
             foreach(var word in word_list){
-                if(this.punctuation.Contains(word) 
-                    || this.stopwords.Contains(word)){
+                if(this.punctuation.Contains(word) || this.stopwords.Contains(word)){
                         _tmp = new(false, new());
                         _tmp.Item2.Add(word);
                         groups.Add(_tmp);
@@ -191,7 +190,7 @@ namespace rakentlk
                         _tmp = new(true, new());
                         _tmp.Item2.Add(word);
                         groups.Add(_tmp);
-                        System.Console.WriteLine(word);
+                        Console.WriteLine(word);
                     }        
             }
             List<List<string>> phrases = new();
