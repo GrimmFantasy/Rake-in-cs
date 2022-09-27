@@ -11,7 +11,7 @@ namespace rakentlk{
             Rake r = new();
             
             
-            string fileName = @"C:\Users\capse\Documents\GitHub\Rake_NTLK_IN_CS\test.txt";
+            string fileName = @"..\\..\\..\\test.txt";
 
             string text = File.ReadAllText(fileName);
             r.extract_keywords_from_text(text);

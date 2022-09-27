@@ -101,15 +101,12 @@ namespace rakentlk
         public List<string> _tokenize_sentence_to_words(string sentence){
             List<string> words = new();
             foreach (var word in sentence.Split(' ').ToList()) {
-                if (!exceptions.Any(w => w.ToLower() == word.ToLower() + ".") && word.Contains('.'))
-                {
-                    words.Add(word.Split('.').First());
-                    words.Add(".");
-                }
-                else if (word.Contains(','))
-                {
-                    words.Add(word.Split(',').First());
-                    words.Add(",");
+                if (!exceptions.Any(w => w.ToLower() == word.ToLower()) && punctuation.Any(p => word.Contains(p))) {
+                    char _char = (punctuation.First(p => word.Contains(p))).ToCharArray()[0];
+                    string tmp = word.Replace(_char, ' ');
+                    words.Add(tmp);
+                    words.Add(_char.ToString());
+
                 }
                 else {
                     words.Add(word);
@@ -238,8 +235,7 @@ namespace rakentlk
                     _tmp.Item2.Add(word);
                 }        
             }
-            
-                    groups.Add(_tmp);
+            groups.Add(_tmp);
             List<List<string>> phrases = new();
             foreach (var group in groups)
             {
