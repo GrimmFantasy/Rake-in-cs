@@ -28,6 +28,7 @@ namespace rakentlk
         public Dictionary<string, int> degree { get; set; } = new();
         public List<Tuple<string, float>> rank_list { get; set; } = new();
         public List<string> ranked_phrases { get; set; }= new();
+        public List<string> exceptions { get; set; } = new() { "jr.", "u.s.", "mrs.", "mr.", "ms."};
 
         public Rake(List<string> stopwords = default, List<string> punctuation = default, string language = "english", Metric ranking_metric = Metric.DEGREE_TO_FREQUENCY_RATIO, 
                 int max_length = 100000, int min_length = 1, bool include_repeat_phrase = true)
@@ -72,19 +73,28 @@ namespace rakentlk
             return this.frequency_dist;
         }
         public List<string> _tokenize_text_to_sentences(string text){
-            
-            return this.sentence_tokenizer = text.Split(". ").ToList();
+            string _tmp ="";
+            List<string> sentences = new List<string>();
+            foreach (var word in text.Split()) {
+                if (!exceptions.Any(w => w.ToLower() == word.ToLower()) && word.Contains('.'))
+                {
+                   sentences.Add(_tmp.TrimStart());
+                    _tmp = "";
+                }
+                else {
+                    _tmp += (word + " ");
+
+                }
+            }
+            return this.sentence_tokenizer = sentences;
         }
         public List<string> _tokenize_sentence_to_words(string sentence){
             List<string> words = new();
             foreach (var word in sentence.Split(' ').ToList()) {
-                if (word.Contains('.'))
+                if (!exceptions.Any(w => w.ToLower() == word.ToLower() + ".") && word.Contains('.'))
                 {
                     words.Add(word.Split('.').First());
                     words.Add(".");
-                    if (word.Split('.').Length >= 2 && word.Split('.').Last() != " ") {
-                        words.Add(word.Split('.').Last());
-                    }
                 }
                 else if (word.Contains(','))
                 {
@@ -137,6 +147,7 @@ namespace rakentlk
                     }
                 }
             }
+            
             foreach (var set in co_occurance_graph)
             {
                 
@@ -145,6 +156,7 @@ namespace rakentlk
                 }else{
                     this.degree.Add(set.Key, set.Value.Values.Sum());
                 }
+                
             }
         }
         public void _build_ranklist(List<List<string>> phrase_list){
@@ -155,7 +167,7 @@ namespace rakentlk
                 rank = 0.0f;
                 foreach (var word in phrase)
                 {
-
+                    if (word != "") { 
                     if(this.ranking_metric == Metric.DEGREE_TO_FREQUENCY_RATIO){
                         rank += 1.0f * this.degree[word] / this.frequency_dist[word];
                     }else if(this.ranking_metric == Metric.WORD_DEGREE){
@@ -163,9 +175,11 @@ namespace rakentlk
                     }else{
                         rank += 1.0f * this.frequency_dist[word];
                     }
+                    }
                 }
                     Tuple<string, float> _tmp = new Tuple<string, float>(String.Join(' ', phrase), rank);
                     this.rank_list.Add(_tmp);
+
             }
             this.rank_list = this.rank_list.OrderByDescending(t => t.Item2).ToList();
             foreach (var sentence in rank_list)

@@ -10,25 +10,17 @@ namespace rakentlk{
               
             Rake r = new(punctuation: new List<string> {". "});
             
-            List<string> lines = new List<string>();
-            // Open the stream and read it back.
-            using (FileStream fs = File.Open("C:\\Users\\capse\\Documents\\GitHub\\Rake_NTLK_IN_CS\\test.txt", FileMode.Open))
-            {
-                byte[] b = new byte[1024];
-                UTF8Encoding temp = new UTF8Encoding(true);
+            
+            string fileName = @"C:\Users\capse\Documents\GitHub\Rake_NTLK_IN_CS\test.txt";
 
-                while (fs.Read(b,0,b.Length) > 0)
-                {
-                    lines.Add(temp.GetString(b));
-                }
-                
-            }
-            r.extract_keywords_from_text(string.Join(' ', lines));
+            string text = File.ReadAllText(fileName);
+            r.extract_keywords_from_text(text);
             List<string> phrases = r.get_ranked_phrases_without_scores();
-            foreach (var item in phrases)
+            foreach (string phrase in phrases)
             {
-                Console.WriteLine(item);
+                Console.WriteLine(phrase);
             }
+
         }
     }
 
