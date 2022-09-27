@@ -19,8 +19,8 @@ namespace rakentlk{
             foreach (var phrase in r.passages)
             {
                 
-                Console.WriteLine(phrase.FullPassage);
-                Console.WriteLine(phrase.ProsecsPassage);
+                Console.WriteLine("full: "+phrase.FullPassage);
+                Console.WriteLine("prosec: "+phrase.ProsecsPassage);
 
             }
 
