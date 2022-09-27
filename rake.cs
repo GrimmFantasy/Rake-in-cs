@@ -32,6 +32,7 @@ namespace rakentlk
         public List<Tuple<string, float>> rank_list { get; set; } = new();
         public List<string> ranked_phrases { get; set; }= new();
         public List<string> exceptions { get; set; } = new() { "jr.", "u.s.", "mrs.", "mr.", "ms."};
+        public List<Passage> passages { get; set; } = new();
 
         public Rake(List<string> stopwords = default, List<string> punctuation = default, string language = "english", Metric ranking_metric = Metric.DEGREE_TO_FREQUENCY_RATIO, 
                 int max_length = 100000, int min_length = 1, bool include_repeat_phrase = true)
@@ -195,26 +196,31 @@ namespace rakentlk
         }
         public List<List<string>> _generate_phrases(List<string> sentences){
             List<List<string>> phrase_list = new();
+            List<string> word_list = new();
+            HashSet<List<string>> unique_phrase_tracker = new();
+            List<List<string>> non_repeated_phrase_list = new();
             foreach (var sentence in sentences)
             {
-                List<string> word_list = new();
+                word_list.Clear();
                 foreach (var word in this._tokenize_sentence_to_words(sentence)){
                     word_list.Add(word.ToLower());
                 }
+
                 foreach (var phrase in this._get_phrase_list_from_words(word_list)){
+                    if (!unique_phrase_tracker.Contains(phrase))
+                    {
+                        unique_phrase_tracker.Add(phrase);
+                        non_repeated_phrase_list.Add(phrase);
+                        this.passages.Add(new Passage(string.Join(' ', sentence), string.Join(' ', phrase)));
+                    }
+                    else if (this.include_repeat_phrase)
+                    {
+                        this.passages.Add(new Passage(string.Join(' ', sentence), string.Join(' ', phrase)));
                     phrase_list.Add(phrase);
+                    }
                 }
             }
             if(!this.include_repeat_phrase){
-                HashSet<List<string>> unique_phrase_tracker = new();
-                List<List<string>> non_repeated_phrase_list = new();
-                foreach (var phrase in phrase_list)
-                {
-                    if(!unique_phrase_tracker.Contains(phrase)){
-                        unique_phrase_tracker.Add(phrase);
-                        non_repeated_phrase_list.Add(phrase);
-                    }
-                }
                 return non_repeated_phrase_list;
             }
             else{

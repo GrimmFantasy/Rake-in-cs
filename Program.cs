@@ -16,9 +16,12 @@ namespace rakentlk{
             string text = File.ReadAllText(fileName);
             r.extract_keywords_from_text(text);
             List<string> phrases = r.get_ranked_phrases_without_scores();
-            foreach (string phrase in phrases)
+            foreach (var phrase in r.passages)
             {
-                Console.WriteLine(phrase);
+                
+                Console.WriteLine(phrase.FullPassage);
+                Console.WriteLine(phrase.ProsecsPassage);
+
             }
 
         }
