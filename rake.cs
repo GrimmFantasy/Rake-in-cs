@@ -76,7 +76,26 @@ namespace rakentlk
             return this.sentence_tokenizer = text.Split(". ").ToList();
         }
         public List<string> _tokenize_sentence_to_words(string sentence){
-            return this.word_tokenizer = sentence.Split(' ', '.', ',').ToList();
+            List<string> words = new();
+            foreach (var word in sentence.Split(' ').ToList()) {
+                if (word.Contains('.'))
+                {
+                    words.Add(word.Split('.').First());
+                    words.Add(".");
+                    if (word.Split('.').Length >= 2 && word.Split('.').Last() != " ") {
+                        words.Add(word.Split('.').Last());
+                    }
+                }
+                else if (word.Contains(','))
+                {
+                    words.Add(word.Split(',').First());
+                    words.Add(",");
+                }
+                else {
+                    words.Add(word);
+                }
+            }
+            return this.word_tokenizer = words;
         }
         public void _build_frequency_dist(List<List<string>> phrase_list){
             foreach(var phrase in phrase_list){
@@ -93,19 +112,26 @@ namespace rakentlk
         }
         public void _build_word_co_occurance_graph(List<List<string>> phrase_list){
             Dictionary<string, Dictionary<string, int>> co_occurance_graph = new();
-            System.Console.WriteLine("building occurance graph");
+            Console.WriteLine("building occurance graph");
             foreach (var phrase in phrase_list){
                 foreach(var word in phrase){
                     foreach(string coword in phrase){
-                            //System.Console.WriteLine(coword + " " + word);
                         if(word != coword){
-                            if(co_occurance_graph[word][coword] != null){
+                            if(co_occurance_graph.ContainsKey(word) && co_occurance_graph[word].ContainsKey(coword))
+                            {
                                 co_occurance_graph[word][coword]  +=1;
                             }else{  
-                                Dictionary<string, int> _tmp = new();
-                                _tmp.Add(word, 1);
-                                co_occurance_graph.Add(word, _tmp);
-                                _tmp.Clear();
+                                if (co_occurance_graph.ContainsKey(word))
+                                {
+
+                                    co_occurance_graph[word].Add(coword, 1);
+                                }
+                                else {
+                                    Dictionary<string, int> _tmp = new();
+                                    _tmp.Add(coword, 1);
+                                    co_occurance_graph.Add(word, _tmp);
+                                    _tmp.Clear();
+                                }
                             }
                         }
                     }
@@ -113,9 +139,8 @@ namespace rakentlk
             }
             foreach (var set in co_occurance_graph)
             {
-                //System.Console.WriteLine("heres");
-                //System.Console.WriteLine( set.Key);
-                if(this.degree[set.Key] != null){
+                
+                if(this.degree.ContainsKey(set.Key)){
                     this.degree[set.Key] = set.Value.Values.Sum();
                 }else{
                     this.degree.Add(set.Key, set.Value.Values.Sum());
@@ -123,14 +148,13 @@ namespace rakentlk
             }
         }
         public void _build_ranklist(List<List<string>> phrase_list){
+            Console.WriteLine("Building Ranklist");
                 float rank;
             foreach (var phrase in phrase_list)
             {
                 rank = 0.0f;
                 foreach (var word in phrase)
                 {
-                    //System.Console.WriteLine(word);
-                    System.Console.WriteLine(this.degree.Count());
 
                     if(this.ranking_metric == Metric.DEGREE_TO_FREQUENCY_RATIO){
                         rank += 1.0f * this.degree[word] / this.frequency_dist[word];
@@ -146,7 +170,7 @@ namespace rakentlk
             this.rank_list = this.rank_list.OrderByDescending(t => t.Item2).ToList();
             foreach (var sentence in rank_list)
             {
-                this.ranked_phrases.Append(sentence.Item1);
+                this.ranked_phrases.Add(sentence.Item1);
             }
         }
         public List<List<string>> _generate_phrases(List<string> sentences){
@@ -179,20 +203,22 @@ namespace rakentlk
         }
         public List<List<string>> _get_phrase_list_from_words(List<string> word_list){
             List<Tuple<bool, List<string>>> groups = new();
-            Tuple<bool, List<string>> _tmp;
+            Tuple<bool, List<string>> _tmp = new(true, new());
 
             foreach(var word in word_list){
                 if(this.punctuation.Contains(word) || this.stopwords.Contains(word)){
+                        groups.Add(_tmp);
                         _tmp = new(false, new());
                         _tmp.Item2.Add(word);
                         groups.Add(_tmp);
-                    }else{
                         _tmp = new(true, new());
-                        _tmp.Item2.Add(word);
-                        groups.Add(_tmp);
-                        Console.WriteLine(word);
-                    }        
+                }else{
+                    _tmp.Item2.Add(word);
+                    //Console.WriteLine(word);
+                }        
             }
+            
+                    groups.Add(_tmp);
             List<List<string>> phrases = new();
             foreach (var group in groups)
             {

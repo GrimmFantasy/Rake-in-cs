@@ -8,7 +8,7 @@ namespace rakentlk{
 
         static void Main() {
               
-            Rake r = new(punctuation: new List<string> { ",", ". "});
+            Rake r = new(punctuation: new List<string> {". "});
             
             List<string> lines = new List<string>();
             // Open the stream and read it back.
@@ -23,12 +23,10 @@ namespace rakentlk{
                 }
                 
             }
-            r.extract_keywords_from_text(String.Join(" ", lines));
+            r.extract_keywords_from_text(string.Join(' ', lines));
             List<string> phrases = r.get_ranked_phrases_without_scores();
-            Console.WriteLine(phrases.Count());
             foreach (var item in phrases)
             {
-                Console.WriteLine("here");
                 Console.WriteLine(item);
             }
         }
