@@ -8,7 +8,7 @@ namespace rakentlk{
 
         static void Main() {
               
-            Rake r = new(punctuation: new List<string> {". "});
+            Rake r = new();
             
             
             string fileName = @"C:\Users\capse\Documents\GitHub\Rake_NTLK_IN_CS\test.txt";

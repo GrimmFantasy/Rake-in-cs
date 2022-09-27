@@ -3,9 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.IO;
+using System.Reflection;
 
 namespace rakentlk
 {
+
     public enum Metric{
 
     //Different metrics that can be used for ranking.
@@ -34,13 +37,17 @@ namespace rakentlk
                 int max_length = 100000, int min_length = 1, bool include_repeat_phrase = true)
         {
             if(stopwords == null) {
-                this.stopwords = new HashSet<string>();
+                this.stopwords = new();
+                foreach (var line in File.ReadLines("..\\..\\..\\stopwords.txt")) {
+                    this.stopwords.Add(line);
+                }
 
             }else{
                 this.stopwords = stopwords.ToHashSet();
             }
             if(punctuation == null){
-                this.punctuation = new HashSet<string>();
+                this.punctuation = new() {"!","?",".",";"};
+
             }
             else{
                 this.punctuation = punctuation.ToHashSet();
@@ -74,11 +81,14 @@ namespace rakentlk
         }
         public List<string> _tokenize_text_to_sentences(string text){
             string _tmp ="";
+
             List<string> sentences = new List<string>();
-            foreach (var word in text.Split()) {
-                if (!exceptions.Any(w => w.ToLower() == word.ToLower()) && word.Contains('.'))
+            foreach (var word in text.Split(' ')) {
+                
+                if (!exceptions.Any(w => w.ToLower() == word.ToLower()) && punctuation.Any(p => word.Contains(p)))
                 {
-                   sentences.Add(_tmp.TrimStart());
+                    _tmp += (word);
+                    sentences.Add(_tmp.TrimStart());
                     _tmp = "";
                 }
                 else {
@@ -122,7 +132,7 @@ namespace rakentlk
         }
         public void _build_word_co_occurance_graph(List<List<string>> phrase_list){
             Dictionary<string, Dictionary<string, int>> co_occurance_graph = new();
-            Console.WriteLine("building occurance graph");
+            Console.WriteLine("Building occurance graph");
             foreach (var phrase in phrase_list){
                 foreach(var word in phrase){
                     foreach(string coword in phrase){
@@ -150,7 +160,6 @@ namespace rakentlk
             
             foreach (var set in co_occurance_graph)
             {
-                
                 if(this.degree.ContainsKey(set.Key)){
                     this.degree[set.Key] = set.Value.Values.Sum();
                 }else{
@@ -167,7 +176,7 @@ namespace rakentlk
                 rank = 0.0f;
                 foreach (var word in phrase)
                 {
-                    if (word != "") { 
+                    if (word != "" && degree.ContainsKey(word)) { 
                     if(this.ranking_metric == Metric.DEGREE_TO_FREQUENCY_RATIO){
                         rank += 1.0f * this.degree[word] / this.frequency_dist[word];
                     }else if(this.ranking_metric == Metric.WORD_DEGREE){
@@ -218,7 +227,6 @@ namespace rakentlk
         public List<List<string>> _get_phrase_list_from_words(List<string> word_list){
             List<Tuple<bool, List<string>>> groups = new();
             Tuple<bool, List<string>> _tmp = new(true, new());
-
             foreach(var word in word_list){
                 if(this.punctuation.Contains(word) || this.stopwords.Contains(word)){
                         groups.Add(_tmp);
@@ -228,7 +236,6 @@ namespace rakentlk
                         _tmp = new(true, new());
                 }else{
                     _tmp.Item2.Add(word);
-                    //Console.WriteLine(word);
                 }        
             }
             
@@ -239,12 +246,6 @@ namespace rakentlk
                 if(group.Item1 
                     && (group.Item2.Count() >= this.min_length && group.Item2.Count() <= this.max_length)){
                     phrases.Add(group.Item2);
-                    // foreach (var phrase in group.Item2){
-                    //     foreach (var item in phrase)
-                    //     {
-                    //         System.Console.WriteLine(phrase);
-                    //     }
-                    // }
 
                 }
             }
