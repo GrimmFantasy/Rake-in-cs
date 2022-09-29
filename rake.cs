@@ -10,11 +10,10 @@ namespace rakentlk
 {
 
     public enum Metric{
-
-    //Different metrics that can be used for ranking.
-    DEGREE_TO_FREQUENCY_RATIO = 0,  // Uses d(w)/f(w) as the metric
-    WORD_DEGREE = 1, // Uses d(w) alone as the metric
-    WORD_FREQUENCY = 2  // Uses f(w) alone as the metric
+        //Different metrics that can be used for ranking.
+        DEGREE_TO_FREQUENCY_RATIO = 0,  // Uses d(w)/f(w) as the metric
+        WORD_DEGREE = 1, // Uses d(w) alone as the metric
+        WORD_FREQUENCY = 2  // Uses f(w) alone as the metric
     }
     public class Rake
     {
@@ -29,8 +28,7 @@ namespace rakentlk
         public List<string> word_tokenizer { get; set; } 
         public Dictionary<string, int> frequency_dist { get; set; } = new();
         public Dictionary<string, int> degree { get; set; } = new();
-        public List<Tuple<string, float>> rank_list { get; set; } = new();
-        public List<string> ranked_phrases { get; set; }= new();
+        public List<Passage> rank_list { get; set; } = new();
         public List<string> exceptions { get; set; } = new() { "jr.", "u.s.", "mrs.", "mr.", "ms."};
         public List<Passage> passages { get; set; } = new();
 
@@ -66,15 +64,13 @@ namespace rakentlk
             this.extract_keywords_from_sentences(sentences);
         }
         public void extract_keywords_from_sentences(List<string> sentences){
-            List<List<string>> phrase_list = this._generate_phrases(sentences);
-            this._build_frequency_dist(phrase_list);
-            this._build_word_co_occurance_graph(phrase_list);
-            this._build_ranklist(phrase_list);
+            this._generate_phrases(sentences);
+            this._build_frequency_dist(passages);
+            this._build_word_co_occurance_graph(passages);
+            this._build_ranklist(passages);
         }
-        public List<string> get_ranked_phrases_without_scores(){
-            return this.ranked_phrases;
-        }
-        public List<Tuple<string, float>> get_ranked_phrases_with_scores(){
+       
+        public List<Passage> get_ranked_phrases(){
             return this.rank_list;
         }
         public Dictionary<string, int> get_word_frequency_distribution(){
@@ -107,7 +103,6 @@ namespace rakentlk
                     string tmp = word.Replace(_char, ' ');
                     words.Add(tmp);
                     words.Add(_char.ToString());
-
                 }
                 else {
                     words.Add(word);
@@ -115,25 +110,23 @@ namespace rakentlk
             }
             return this.word_tokenizer = words;
         }
-        public void _build_frequency_dist(List<List<string>> phrase_list){
+        public void _build_frequency_dist(List<Passage> phrase_list){
             foreach(var phrase in phrase_list){
-                    foreach(var word in phrase){
-
+                foreach(var word in phrase.ProsecsPassage){
                     if(this.frequency_dist.ContainsKey(word)){
                         this.frequency_dist[word] +=1;
                     } else{
-                    this.frequency_dist.Add(word, 1); 
-
+                        this.frequency_dist.Add(word, 1); 
                     }
-                    }
+                }
             }
         }
-        public void _build_word_co_occurance_graph(List<List<string>> phrase_list){
+        public void _build_word_co_occurance_graph(List<Passage> phrase_list){
             Dictionary<string, Dictionary<string, int>> co_occurance_graph = new();
             Console.WriteLine("Building occurance graph");
             foreach (var phrase in phrase_list){
-                foreach(var word in phrase){
-                    foreach(string coword in phrase){
+                foreach(var word in phrase.ProsecsPassage){
+                    foreach(string coword in phrase.ProsecsPassage){
                         if(word != coword){
                             if(co_occurance_graph.ContainsKey(word) && co_occurance_graph[word].ContainsKey(coword))
                             {
@@ -157,7 +150,7 @@ namespace rakentlk
             }
             
             foreach (var set in co_occurance_graph)
-            {
+            { 
                 if(this.degree.ContainsKey(set.Key)){
                     this.degree[set.Key] = set.Value.Values.Sum();
                 }else{
@@ -166,13 +159,13 @@ namespace rakentlk
                 
             }
         }
-        public void _build_ranklist(List<List<string>> phrase_list){
+        public void _build_ranklist(List<Passage> phrase_list){
             Console.WriteLine("Building Ranklist");
-                float rank;
+            float rank;
             foreach (var phrase in phrase_list)
             {
                 rank = 0.0f;
-                foreach (var word in phrase)
+                foreach (var word in phrase.ProsecsPassage)
                 {
                     if (word != "" && degree.ContainsKey(word)) { 
                     if(this.ranking_metric == Metric.DEGREE_TO_FREQUENCY_RATIO){
@@ -184,21 +177,14 @@ namespace rakentlk
                     }
                     }
                 }
-                    Tuple<string, float> _tmp = new Tuple<string, float>(String.Join(' ', phrase), rank);
-                    this.rank_list.Add(_tmp);
-
+                phrase.rank = rank;
+                this.rank_list.Add(phrase);
             }
-            this.rank_list = this.rank_list.OrderByDescending(t => t.Item2).ToList();
-            foreach (var sentence in rank_list)
-            {
-                this.ranked_phrases.Add(sentence.Item1);
-            }
+            this.rank_list = this.rank_list.OrderByDescending(t => t.rank).ToList();
         }
-        public List<List<string>> _generate_phrases(List<string> sentences){
-            List<List<string>> phrase_list = new();
+        public void _generate_phrases(List<string> sentences){
             List<string> word_list = new();
             HashSet<List<string>> unique_phrase_tracker = new();
-            List<List<string>> non_repeated_phrase_list = new();
             foreach (var sentence in sentences)
             {
                 word_list.Clear();
@@ -207,24 +193,18 @@ namespace rakentlk
                 }
 
                 foreach (var phrase in this._get_phrase_list_from_words(word_list)){
-                    if (!unique_phrase_tracker.Contains(phrase))
-                    {
-                        unique_phrase_tracker.Add(phrase);
-                        non_repeated_phrase_list.Add(phrase);
-                        this.passages.Add(new Passage(string.Join(' ', sentence), string.Join(' ', phrase)));
+                    if (!this.include_repeat_phrase) { 
+                        if (!unique_phrase_tracker.Contains(phrase))
+                        {
+                            unique_phrase_tracker.Add(phrase);
+                            this.passages.Add(new Passage(string.Join(' ', sentence), phrase));
+                        }
                     }
                     else if (this.include_repeat_phrase)
                     {
-                        this.passages.Add(new Passage(string.Join(' ', sentence), string.Join(' ', phrase)));
-                    phrase_list.Add(phrase);
+                        this.passages.Add(new Passage(string.Join(' ', sentence), phrase));
                     }
                 }
-            }
-            if(!this.include_repeat_phrase){
-                return non_repeated_phrase_list;
-            }
-            else{
-                return phrase_list;
             }
         }
         public List<List<string>> _get_phrase_list_from_words(List<string> word_list){
@@ -232,11 +212,11 @@ namespace rakentlk
             Tuple<bool, List<string>> _tmp = new(true, new());
             foreach(var word in word_list){
                 if(this.punctuation.Contains(word) || this.stopwords.Contains(word)){
-                        groups.Add(_tmp);
-                        _tmp = new(false, new());
-                        _tmp.Item2.Add(word);
-                        groups.Add(_tmp);
-                        _tmp = new(true, new());
+                    groups.Add(_tmp);
+                    _tmp = new(false, new());
+                    _tmp.Item2.Add(word);
+                    groups.Add(_tmp);
+                    _tmp = new(true, new());
                 }else{
                     _tmp.Item2.Add(word);
                 }        

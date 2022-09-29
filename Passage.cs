@@ -10,8 +10,10 @@ namespace rakentlk
     {
         public static int ID = 0;
         public string FullPassage { get; set; }
-        public string ProsecsPassage { get; set; }
-        public Passage(string fullPassage, string prosecsPassage)
+        public List<string> ProsecsPassage { get; set; }
+        public string ProsecsPassageAsString { get { return string.Join(' ', ProsecsPassage); } }
+        public float rank { get; set; }
+        public Passage(string fullPassage, List<string> prosecsPassage)
         {
             ID = ID + 1;
             FullPassage = fullPassage;

@@ -15,13 +15,10 @@ namespace rakentlk{
 
             string text = File.ReadAllText(fileName);
             r.extract_keywords_from_text(text);
-            List<string> phrases = r.get_ranked_phrases_without_scores();
-            foreach (var phrase in r.passages)
+            List<Passage> phrases = r.get_ranked_phrases();
+            foreach (var phrase in phrases)
             {
-                
-                Console.WriteLine("full: "+phrase.FullPassage);
-                Console.WriteLine("prosec: "+phrase.ProsecsPassage);
-
+                Console.WriteLine(phrase.ProsecsPassageAsString + ": " + phrase.rank);
             }
 
         }
