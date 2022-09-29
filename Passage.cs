@@ -9,6 +9,7 @@ namespace rakentlk
     public class Passage
     {
         public static int ID = 0;
+        public int Artical_ID { get; set; }
         public string FullPassage { get; set; }
         public List<string> ProsecsPassage { get; set; }
         public string ProsecsPassageAsString { get { return string.Join(' ', ProsecsPassage); } }
